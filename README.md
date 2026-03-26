@@ -1,9 +1,9 @@
-Activate the xmin:
+Activate the xmin for Windows:
 PS C:\Program Files (x86)\xming> .\Xming.exe :0 -ac -multiwindow -clipboard
 
 Run Minikube:
 > minikube start
-to run the minikube in intellij first make sure minikube has it own docker daemo
+to run the minikube in intellij, make sure minikube has it own docker daemo
 
 1. & minikube -p minikube docker-env --shell powershell | Invoke-Expression
 
@@ -27,5 +27,7 @@ READY   STATUS    RESTARTS
 
 
 5. to delete the minikube
+
    kubectl delete pod <pod-name>
+
    kubectl delete pod fuelconsumption-app-5984c69657-958w6
