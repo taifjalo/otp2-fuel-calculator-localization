@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>main.java</groupId>
+    <groupId>org.example.fuel_calculator</groupId>
     <artifactId>otp2-fuel-calculator-localization</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>otp2-fuel-calculator-localization</name>
@@ -62,7 +62,7 @@
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>
-                                main.java.otp2fuelcalculatorlocalization/HelloApplication
+                                org.example.fuel_calculator/FuelCalculatorApp
                             </mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
@@ -89,7 +89,7 @@
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>
-                                        main.java.otp2fuelcalculatorlocalization/HelloApplication
+                                        org.example.fuel_calculator/FuelCalculatorApp
                                     </mainClass>
                                 </transformer>
                             </transformers>
