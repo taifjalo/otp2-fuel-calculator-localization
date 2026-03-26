@@ -1,36 +1,74 @@
-Activate the xmin for Windows:
 
->PS C:\Program Files (x86)\xming> .\Xming.exe :0 -ac -multiwindow -clipboard
+# Running the Application on Minikube (Windows)
 
-Run Minikube:
-> minikube start
-to run the minikube in intellij, make sure minikube has it own docker daemo
+## 1. Start Xming on Windows
+Open PowerShell and run:
+```powershell
+PS C:\Program Files (x86)\Xming> .\Xming.exe :0 -ac -multiwindow -clipboard
+````
 
-1. & minikube -p minikube docker-env --shell powershell | Invoke-Expression
+## 2. Start Minikube
 
-        build the image
+```powershell
+minikube start
+```
 
-2. docker build -t taifjalo1/otp2-fuel-calculator-localization:latest .
+> Note: To run Minikube in IntelliJ, make sure it has its own Docker daemon.
 
-   for example docker build -t <your-image-name>:<tag> .
+## 3. Set up Docker Environment
 
-       Deploy to the kubernetes
+```powershell
+minikube -p minikube docker-env --shell powershell | Invoke-Expression
+```
 
-3.  kubectl apply -f fuelconsumption_deployment.yaml 
+## 4. Build the Docker Image
 
-     kubectl get pods
+```powershell
+docker build -t taifjalo1/otp2-fuel-calculator-localization:latest .
+```
 
-        Ensure you imagePullpolicy in the YAML is never
-   4. imagePullPolicy: Never
+> Or use your own image name and tag:
 
-          check the pods status become Running
+```powershell
+docker build -t <your-image-name>:<tag> .
+```
 
-    | READY | STATUS  | RESTARTS  |
-    | ------- | --- | --- |
-    | 1/1 | Running | 0 |
+## 5. Deploy to Kubernetes
 
-5. to delete the minikube
+Apply the deployment YAML:
 
-   kubectl delete pod <pod-name>
+```powershell
+kubectl apply -f fuelconsumption_deployment.yaml
+```
 
-   kubectl delete pod fuelconsumption-app-5984c69657-958w6
+Check Pod status:
+
+```powershell
+kubectl get pods
+```
+
+> Make sure `imagePullPolicy` in your YAML is set to:
+
+```yaml
+imagePullPolicy: Never
+```
+
+Expected Pod status:
+
+| READY | STATUS  | RESTARTS |
+| ----- | ------- | -------- |
+| 1/1   | Running | 0        |
+
+## 6. Delete Pods or Minikube
+
+To delete a specific Pod:
+
+```powershell
+kubectl delete pod <pod-name>
+```
+
+Example:
+
+```powershell
+kubectl delete pod fuelconsumption-app-5984c69657-958w6
+```
