@@ -2,6 +2,16 @@ FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 ENV DISPLAY=host.docker.internal:0.0
 
+# Install only required libraries to support Japanese lang UTF 8
+RUN apt-get update && apt-get install -y \
+    locales \
+    fonts-noto-cjk \
+    fonts-ipafont && \
+    locale-gen ja_JP.UTF-8
+
+ENV LANG=ja_JP.UTF-8
+ENV LC_ALL=ja_JP.UTF-8
+
 # Install only required libraries (NO MAVEN HERE)
 RUN apt-get update && \
     apt-get install -y wget unzip libgtk-3-0 libgbm1 libx11-6 && \
