@@ -10,144 +10,127 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.example.fuel_calculator.service.LocalizationService;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.Map;
-
 public class FuelCalculatorController {
 
-    @FXML private VBox rootVBox;
-    @FXML private Label lblTitle;
-    @FXML private Label lblDistance;
-    @FXML private Label lblFuel;
+    //  FXML fields
+    @FXML private VBox      rootVBox;
+    @FXML private Label     lblTitle;
+    @FXML private Label     lblDistance;
+    @FXML private Label     lblFuel;
     @FXML private TextField tfDistance;
     @FXML private TextField tfFuel;
-    @FXML private Button btnCalculate;
-    @FXML private Label lblResult;
+    @FXML private Button    btnCalculate;
+    @FXML private Label     lblResult;
 
-    private Locale currentLocale = new Locale("en", "US");
-    private Map<String, String> localizedStrings;
+    // Lifecycle
+
     /**
-     * Initialize the controller - called automatically after FXML loading
+     * Called automatically after FXML loading.
+     * Loads English strings from DB on startup.
      */
     @FXML
     public void initialize() {
-        // Set initial language
-        setLanguage(currentLocale);
+        setLanguage("en");
 
-        // Add listeners to clear result when input changes
-        tfDistance.textProperty().addListener((obs, oldVal, newVal) -> lblResult.setText(""));
-        tfFuel.textProperty().addListener((obs, oldVal, newVal) -> lblResult.setText(""));
+        tfDistance.textProperty().addListener((obs, o, n) -> lblResult.setText(""));
+        tfFuel.textProperty().addListener((obs, o, n)     -> lblResult.setText(""));
     }
 
-    /**
-     * Language button handlers
-     */
-    @FXML
-    public void onENClick(ActionEvent e) { setLanguage(new Locale("en", "US")); }
+    // Language button handlers
 
-    @FXML
-    public void onFRClick(ActionEvent e) { setLanguage(new Locale("fr", "FR")); }
+    @FXML public void onENClick(ActionEvent e) { setLanguage("en"); }
+    @FXML public void onFRClick(ActionEvent e) { setLanguage("fr"); }
+    @FXML public void onJPClick(ActionEvent e) { setLanguage("ja"); }
+    @FXML public void onFAClick(ActionEvent e) { setLanguage("fa"); }
 
-    @FXML
-    public void onJPClick(ActionEvent e) { setLanguage(new Locale("ja", "JP")); }
-
-    @FXML
-    public void onFAClick(ActionEvent e) { setLanguage(new Locale("fa", "IR")); }
+    // Calculate button
 
     /**
-     * Calculate BMI button handler
+     * 1. Validate input
+     * 2. Calculate fuel consumption
+     * 3. Show localized result (string from DB)
+     * 4. Save record to calculation_records table via DAO
      */
     @FXML
     public void onCalculateClick(ActionEvent e) {
         try {
-            double distance = Double.parseDouble(tfDistance.getText());
-            double fuel = Double.parseDouble(tfFuel.getText());
+            double distance    = Double.parseDouble(tfDistance.getText().trim());
+            double consumption = Double.parseDouble(tfFuel.getText().trim());
 
-            if (distance <= 0 || fuel <= 0) {
-                lblResult.setText(localizedStrings.getOrDefault("error_invalid_input", "Please enter valid numbers"));
+            if (distance <= 0 || consumption <= 0) {
+                lblResult.setText(LocalizationService.getString("error_invalid_input"));
                 return;
             }
 
-            double fuelConsumption = (fuel / distance) * 100;
+            // fuel needed = (L/100km rate) * distance / 100
+            double totalFuel = (consumption / 100.0) * distance;
+            double price     = 1.80;  // default price — add tfPrice field if needed
 
+            double totalCost = totalFuel * price;
 
-            String result = String.format(localizedStrings.getOrDefault("fuel_result", "Fuel Consumption: %.2f"), fuelConsumption);
-            lblResult.setText(result);
+            // Show result using pattern loaded from DB
+            String pattern = LocalizationService.getString("fuel_result");
+            lblResult.setText(String.format(pattern, totalFuel, totalCost));
+
+            // ✅ Save to database via DAO
+            FuelCalculatorDAO.saveRecord(
+                    distance,
+                    consumption,
+                    price,
+                    totalFuel,
+                    totalCost,
+                    LocalizationService.getCurrentLanguage()
+            );
 
         } catch (NumberFormatException ex) {
-            lblResult.setText(localizedStrings.getOrDefault("invalid.input", "Please enter valid numbers"));
+            lblResult.setText(LocalizationService.getString("error_invalid_input"));
         }
     }
 
+    // Private helpers
+
     /**
-     * Set the application language
+     * Loads strings from DB for the given language and updates all UI labels.
      */
-    private void setLanguage(Locale locale) {
-        currentLocale = locale;
-        lblResult.setText(""); // Clear previous result
+    private void setLanguage(String language) {
+        lblResult.setText("");
 
+        // ✅ Load from DB (cached after first call)
+        LocalizationService.loadStrings(language);
 
-        // Load localized strings
-        localizedStrings = LocalizationService.getLocalizedStrings(locale);
+        // Update labels from DB strings
+        lblTitle.setText(LocalizationService.getString("title"));
+        lblDistance.setText(LocalizationService.getString("distance"));
+        lblFuel.setText(LocalizationService.getString("fuel"));
+        btnCalculate.setText(LocalizationService.getString("calculate"));
+        tfDistance.setPromptText(LocalizationService.getString("enter_distance"));
+        tfFuel.setPromptText(LocalizationService.getString("enter_fuel"));
 
-        // Update all UI text
-        lblTitle.setText(localizedStrings.getOrDefault("title", "Fuel Consumption"));
-        lblDistance.setText(localizedStrings.getOrDefault("distance", "distance (km):"));
-        lblFuel.setText(localizedStrings.getOrDefault("fuel", "Fuel (L):"));
-        btnCalculate.setText(localizedStrings.getOrDefault("calculate", "Calculate"));
-        tfDistance.setPromptText(localizedStrings.getOrDefault("enter.distance", "Enter distance"));
-        tfFuel.setPromptText(localizedStrings.getOrDefault("enter.fuel", "Enter fuel"));
-
-        // Apply text direction based on language
-        applyTextDirection(locale);
+        applyTextDirection(language);
     }
 
     /**
-     * Apply LTR or RTL layout direction
+     * Applies RTL layout for Persian/Arabic, LTR for all others.
+     * Same approach as the professor's averageSpeed_DB project.
      */
-    private void applyTextDirection(Locale locale) {
-        // Step 1: Detect if the language is RTL
-        String lang = locale.getLanguage();
-        boolean isRTL = lang.equals("fa")   // Persian
-                || lang.equals("ur")   // Urdu
-                || lang.equals("ar")   // Arabic
-                || lang.equals("he");  // Hebrew
+    private void applyTextDirection(String language) {
+        boolean isRTL = language.equals("fa")
+                || language.equals("ar")
+                || language.equals("he")
+                || language.equals("ur");
 
-        // Step 2: Wrap UI changes in Platform.runLater() for thread safety
         Platform.runLater(() -> {
-            // Step 3: Set NodeOrientation on the root VBox
             if (rootVBox != null) {
                 rootVBox.setNodeOrientation(
                         isRTL ? NodeOrientation.RIGHT_TO_LEFT
                                 : NodeOrientation.LEFT_TO_RIGHT
                 );
             }
-
-            // Step 4: Align text inside TextFields
-            String alignment = isRTL ? "-fx-text-alignment: right; -fx-alignment: center-right;"
-                    : "-fx-text-alignment: left; -fx-alignment: center-left;";
-            tfDistance.setStyle(alignment);
-            tfFuel.setStyle(alignment);
+            String style = isRTL
+                    ? "-fx-text-alignment: right; -fx-alignment: center-right;"
+                    : "-fx-text-alignment: left;  -fx-alignment: center-left;";
+            tfDistance.setStyle(style);
+            tfFuel.setStyle(style);
         });
     }
-
-    /**
-     * Display local time formatted for the current locale
-
-    private void displayLocalTime(Locale locale) {
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(
-                localizedStrings.getOrDefault("time_format", "HH:mm:ss")
-        ).withLocale(locale);
-
-        String timeStr = String.format(
-                localizedStrings.getOrDefault("current_time", "Current Time: %s"),
-                now.format(formatter)
-        );
-        lblLocalTime.setText(timeStr);
-    }
-     */
-
 }
