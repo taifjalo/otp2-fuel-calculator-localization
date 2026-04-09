@@ -1,5 +1,4 @@
-# Fuel Consumption Calculator — Multi-Language with Database (Week 3)
-
+# Fuel Consumption Calculator — Multi-Language with Database 
 **Course:** OTP2 / SEP2 — AD 2026  
 **Assignment:** Database-driven localization
 
@@ -17,7 +16,13 @@ A JavaFX application that calculates fuel consumption and trip cost with multi-l
 - MySQL / MariaDB
 - `mysql-connector-j` 8.4.0
 - Maven (build + packaging)
+- JUnit 5 (testing)
+- Mockito (mocking in tests)
 - Docker + Kubernetes (deployment)
+- SonarQube (code quality analysis and coverage reporting) 
+- SpotBugs + Checkstyle + PMD + SonarAnalyzer ( Static code analysis tools)
+- Jenkins (CI/CD pipeline)
+- Xming (Windows X server for GUI in Docker/Kubernetes)
 
 ---
 

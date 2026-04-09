@@ -1,7 +1,6 @@
 package org.example.fuel_calculator.service;
 
 import org.example.fuel_calculator.DatabaseConnection;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,23 +8,26 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Loads UI strings from the localization_strings database table.
- *
  * WEEK 3 CHANGE: No longer reads from .properties files.
- * Instead queries: SELECT `key`, value FROM localization_strings WHERE language = ?
- *
- * Strings are cached after first load — switching back to a language
+ * Instead, it queries: SELECT `key`, value FROM localization_strings
+ * WHERE language = ?
+ * Strings are cached after first load - switching back to a language
  * that was already used makes no DB call.
  */
-public class LocalizationService {
+public final class LocalizationService {
 
-    // Cache: language code → { key → value }
-    // e.g.  "en" → { "title" → "Fuel Calculator", "calculate" → "Calculate" }
     private static final Map<String, Map<String, String>> cache = new HashMap<>();
 
     private static String currentLanguage = "en";
+
+    private LocalizationService() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Loads all strings for the given language from the DB.
@@ -33,16 +35,19 @@ public class LocalizationService {
      *
      * @param language  e.g. "en", "fr", "ja", "fa"
      */
+    @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
     public static void loadStrings(String language) {
         currentLanguage = language;
 
-        // Already cached — skip DB
+        // Already cached - skip DB
         if (cache.containsKey(language)) {
-            System.out.println("Using cached strings for: " + language);
+            Logger.getGlobal().log(Level.INFO, "Using cached strings for: {0}", language);
             return;
         }
 
         Map<String, String> strings = new HashMap<>();
+        // language=SQL
+        //noinspection SqlDialectInspection,SqlNoDataSourceInspection
         String sql = "SELECT `key`, value FROM localization_strings WHERE language = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -56,10 +61,11 @@ public class LocalizationService {
             }
 
             cache.put(language, strings);
-            System.out.println("Loaded " + strings.size() + " strings for: " + language);
+            Logger.getGlobal().log(Level.INFO, "Loaded {0} strings for: {1}", new Object[]{strings.size(), language});
+
 
         } catch (SQLException e) {
-            System.err.println("DB error loading strings for '" + language + "': " + e.getMessage());
+            Logger.getGlobal().log(Level.INFO, "DB error loading strings for ''{0}'': {1}", new Object[]{language, e.getMessage()});
         }
     }
 

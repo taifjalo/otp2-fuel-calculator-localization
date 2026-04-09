@@ -1,19 +1,20 @@
 package org.example.fuel_calculator;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.NodeOrientation;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.example.fuel_calculator.service.LocalizationService;
 
-public class FuelCalculatorController {
 
-    //  FXML fields
-    @FXML private VBox      rootVBox;
+public class FuelCalculatorController {
+    //  @FXML to be injected by FXMLLoader
+    @FXML
+    private VBox      rootVBox;
     @FXML private Label     lblTitle;
     @FXML private Label     lblDistance;
     @FXML private Label     lblFuel;
@@ -38,10 +39,10 @@ public class FuelCalculatorController {
 
     // Language button handlers
 
-    @FXML public void onENClick(ActionEvent e) { setLanguage("en"); }
-    @FXML public void onFRClick(ActionEvent e) { setLanguage("fr"); }
-    @FXML public void onJPClick(ActionEvent e) { setLanguage("ja"); }
-    @FXML public void onFAClick(ActionEvent e) { setLanguage("fa"); }
+    @FXML public void onENClick() { setLanguage("en"); }
+    @FXML public void onFRClick() { setLanguage("fr"); }
+    @FXML public void onJPClick() { setLanguage("ja"); }
+    @FXML public void onFAClick() { setLanguage("fa"); }
 
     // Calculate button
 
@@ -52,7 +53,7 @@ public class FuelCalculatorController {
      * 4. Save record to calculation_records table via DAO
      */
     @FXML
-    public void onCalculateClick(ActionEvent e) {
+    public void onCalculateClick() {
         try {
             double distance    = Double.parseDouble(tfDistance.getText().trim());
             double consumption = Double.parseDouble(tfFuel.getText().trim());
@@ -126,11 +127,9 @@ public class FuelCalculatorController {
                                 : NodeOrientation.LEFT_TO_RIGHT
                 );
             }
-            String style = isRTL
-                    ? "-fx-text-alignment: right; -fx-alignment: center-right;"
-                    : "-fx-text-alignment: left;  -fx-alignment: center-left;";
-            tfDistance.setStyle(style);
-            tfFuel.setStyle(style);
+            Pos alignment = isRTL ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT;
+            tfDistance.setAlignment(alignment);
+            tfFuel.setAlignment(alignment);
         });
     }
 }
