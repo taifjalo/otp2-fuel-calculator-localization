@@ -2,14 +2,13 @@ pipeline {
     agent any
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
-        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'  // Adjust to your actual JDK pat
-        SONARQUBE_SERVER = 'SonarQubeServer'  // The name of the SonarQube server configured in Jenkins
-        SONAR_TOKEN = 'squ_cc4d7e0e46844ca2f69e175476c27f10a462f98b' // Store the token securely
+        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
         DOCKERHUB_REPO = 'taifjalo1/otp2-fuel-calculator-localization'
         DOCKER_IMAGE_TAG = 'latest'
     }
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'master', url: 'https://github.com/taifjalo/otp2-fuel-calculator-localization.git'
@@ -18,13 +17,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'mvn clean install'
+                bat 'mvn clean install -DskipTests'
             }
         }
 
-        stage('Test') {
+        stage('Test & Coverage') {
             steps {
-                bat 'mvn test'
+                bat 'mvn test jacoco:report'
             }
         }
 
@@ -32,18 +31,17 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
                     bat """
-                        ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
+                        mvn sonar:sonar ^
                         -Dsonar.projectKey=fuel_calculator ^
                         -Dsonar.projectName=fuel-calculator ^
                         -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.token=${env.SONAR_TOKEN} ^
+                        -Dsonar.token=squ_cc4d7e0e46844ca2f69e175476c27f10a462f98b ^
                         -Dsonar.java.binaries=target/classes ^
                         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                     """
                 }
             }
         }
-
 
         stage('Build Docker Image') {
             steps {
@@ -62,5 +60,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
