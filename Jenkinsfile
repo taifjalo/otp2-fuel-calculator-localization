@@ -4,7 +4,7 @@ pipeline {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'  // Adjust to your actual JDK pat
         SONARQUBE_SERVER = 'SonarQubeServer'  // The name of the SonarQube server configured in Jenkins
-        SONAR_TOKEN = "${env.SONAR_TOKEN}" // Store the token securely
+        SONAR_TOKEN = 'squ_cc4d7e0e46844ca2f69e175476c27f10a462f98b' // Store the token securely
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
         DOCKERHUB_REPO = 'taifjalo1/otp2-fuel-calculator-localization'
         DOCKER_IMAGE_TAG = 'latest'
@@ -32,11 +32,11 @@ pipeline {
             steps {
                 withSonarQubeEnv('SonarQubeServer') {
                     bat """
-                        mvn sonar:sonar ^
+                        ${tool 'SonarScanner'}\\bin\\sonar-scanner ^
                         -Dsonar.projectKey=fuel_calculator ^
                         -Dsonar.projectName=fuel-calculator ^
                         -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.token=b78e49484120154b6413db4c164336b41300206a ^
+                        -Dsonar.token=${env.SONAR_TOKEN} ^
                         -Dsonar.java.binaries=target/classes ^
                         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                     """
