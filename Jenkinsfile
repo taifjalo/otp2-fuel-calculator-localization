@@ -36,7 +36,7 @@ pipeline {
                         -Dsonar.projectKey=fuel_calculator ^
                         -Dsonar.projectName=fuel-calculator ^
                         -Dsonar.host.url=http://localhost:9000 ^
-                        -Dsonar.token=%SONAR_TOKEN% ^
+                        -Dsonar.token=b78e49484120154b6413db4c164336b41300206a ^
                         -Dsonar.java.binaries=target/classes ^
                         -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
                     """
