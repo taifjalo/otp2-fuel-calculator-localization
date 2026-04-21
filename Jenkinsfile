@@ -3,6 +3,9 @@ pipeline {
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'
+        JAVA_HOME = 'C:\\apache-jmeter-5.6.3'
+
+        RESULT_DIR = "results"
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
         DOCKERHUB_REPO = 'taifjalo1/otp2-fuel-calculator-localization'
         DOCKER_IMAGE_TAG = 'latest'
@@ -44,22 +47,39 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-                    steps {
-                        script {
-                            docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
-                        }
-                    }
+            steps {
+                script {
+                    docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
                 }
+            }
+        }
 
-                stage('Push Docker Image to Docker Hub') {
-                    steps {
-                        script {
-                            docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
-                                docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
-                            }
-                        }
+        stage('Run JMeter Performance Test') {
+            steps {
+                bat """
+        if exist ${RESULT_DIR}\\report rmdir /s /q ${RESULT_DIR}\\report
+        if exist ${RESULT_DIR}\\results.jtl del /f /q ${RESULT_DIR}\\results.jtl
+        if not exist ${RESULT_DIR} mkdir ${RESULT_DIR}
+
+        "%JMETER_HOME%\\bin\\jmeter.bat" ^
+          -n ^
+          -t jmeter\\avg_speed_test.jmx ^
+          -l ${RESULT_DIR}\\results.jtl ^
+          -Jjmeter.save.saveservice.output_format=csv ^
+          -e -o ${RESULT_DIR}\\report
+        """
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
+                        docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
                     }
                 }
+            }
+        }
 
     }
 }
