@@ -63,7 +63,7 @@ pipeline {
 
         "%JMETER_HOME%\\bin\\jmeter.bat" ^
           -n ^
-          -t jmeter\\avg_speed_test.jmx ^
+          -t jmeter\\fuel_calculator_test.jmx ^
           -l ${RESULT_DIR}\\results.jtl ^
           -Jjmeter.save.saveservice.output_format=csv ^
           -e -o ${RESULT_DIR}\\report
