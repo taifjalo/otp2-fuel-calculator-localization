@@ -3,7 +3,7 @@ pipeline {
     environment {
         PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'
-        JAVA_HOME = 'C:\\apache-jmeter-5.6.3'
+        JMETER_HOME = 'C:\\apache-jmeter-5.6.3'
 
         RESULT_DIR = "results"
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
